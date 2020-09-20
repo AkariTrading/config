@@ -1,0 +1,67 @@
+version: '3.8'
+
+services:
+  
+  platform:
+    image: "gcr.io/${PROJECT_ID}/platform"
+    env_file:
+      - config/dev.env
+    networks:
+      - backend
+    depends_on:
+      - redis
+      - postgres
+    deploy:
+      restart_policy:
+        condition: unless-stopped
+      placement:
+        max_replicas_per_node: 2
+        constraints:
+          - "node.labels==platform"
+
+  redis:
+    image: "gcr.io/${PROJECT_ID}/redis"
+    networks:
+      - backend
+    deploy:
+      restart_policy:
+        condition: unless-stopped
+      replicas: 1
+      placement:
+        constraints:
+          - "node.labels==db"
+  
+  postgres:
+    image: postgres:12.4-alpine
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - backend
+    environment:
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+    deploy:
+      restart_policy:
+        condition: unless-stopped
+      replicas: 1
+      placement:
+        constraints:
+          - "node.labels==db"
+
+
+  systemtests:
+    image: "gcr.io/${PROJECT_ID}/systemtests"
+    networks:
+      - backend
+    ports: 
+      - "8080:8080"
+    deploy:
+      replicas: 1
+      placement:
+        constraints:
+          - "node.role==manager"
+
+volumes:
+  postgres_data:
+
+networks:
+  backend:
