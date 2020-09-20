@@ -3,33 +3,28 @@ version: '3.8'
 services:
   
   platform:
-    image: "gcr.io/${PROJECT_ID}/platform:latest"
+    image: gcr.io/${PROJECT_ID}/platform:latest
     env_file:
       - config/dev.env
-    ports: 
-      - 80:6060
+    ports:
+      - 80:80
     networks:
       - backend
-    depends_on:
-      - redis
-      - postgres
-    restart: unless-stopped
     deploy:
       placement:
         max_replicas_per_node: 2
         constraints:
-          - "node.labels==platform"
+          - node.labels.type==platform
 
   redis:
-    image: "gcr.io/${PROJECT_ID}/redis:latest"
+    image: gcr.io/${PROJECT_ID}/redis:latest
     networks:
       - backend
-    restart: unless-stopped
     deploy:
       replicas: 1
       placement:
         constraints:
-          - "node.labels==db"
+          - node.labels.type==db
   
   postgres:
     image: postgres:12.4-alpine
@@ -39,31 +34,26 @@ services:
       - backend
     environment:
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
-    restart: unless-stopped
     deploy:
       replicas: 1
       placement:
         constraints:
-          - "node.labels==db"
+          - node.labels.type==db
 
 
   systemtests:
-    image: "gcr.io/${PROJECT_ID}/systemtests:latest"
+    image: gcr.io/${PROJECT_ID}/systemtests:latest
     env_file:
       - config/dev.env
+    ports:
+      - 8080:8080
     networks:
       - backend
-    depends_on:
-      - redis
-      - postgres
-    ports: 
-      - 8080:8080
-    restart: unless-stopped
     deploy:
       replicas: 1
       placement:
         constraints:
-          - "node.role==manager"
+          - node.role==manager
 
 volumes:
   postgres_data:
