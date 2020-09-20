@@ -11,9 +11,8 @@ services:
     depends_on:
       - redis
       - postgres
+    restart: unless-stopped
     deploy:
-      restart_policy:
-        condition: unless-stopped
       placement:
         max_replicas_per_node: 2
         constraints:
@@ -23,9 +22,8 @@ services:
     image: "gcr.io/${PROJECT_ID}/redis"
     networks:
       - backend
+    restart: unless-stopped
     deploy:
-      restart_policy:
-        condition: unless-stopped
       replicas: 1
       placement:
         constraints:
@@ -39,9 +37,8 @@ services:
       - backend
     environment:
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+    restart: unless-stopped
     deploy:
-      restart_policy:
-        condition: unless-stopped
       replicas: 1
       placement:
         constraints:
@@ -54,6 +51,7 @@ services:
       - backend
     ports: 
       - "8080:8080"
+    restart: unless-stopped
     deploy:
       replicas: 1
       placement:
