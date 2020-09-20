@@ -6,6 +6,8 @@ services:
     image: "gcr.io/${PROJECT_ID}/platform"
     env_file:
       - config/dev.env
+    ports: 
+      - 80:6060
     networks:
       - backend
     depends_on:
@@ -50,7 +52,7 @@ services:
     networks:
       - backend
     ports: 
-      - "8080:8080"
+      - 8080:8080
     restart: unless-stopped
     deploy:
       replicas: 1
