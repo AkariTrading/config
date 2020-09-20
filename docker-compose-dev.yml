@@ -3,7 +3,7 @@ version: '3.8'
 services:
   
   platform:
-    image: "gcr.io/${PROJECT_ID}/platform"
+    image: "gcr.io/${PROJECT_ID}/platform:latest"
     env_file:
       - config/dev.env
     ports: 
@@ -21,7 +21,7 @@ services:
           - "node.labels==platform"
 
   redis:
-    image: "gcr.io/${PROJECT_ID}/redis"
+    image: "gcr.io/${PROJECT_ID}/redis:latest"
     networks:
       - backend
     restart: unless-stopped
@@ -48,7 +48,9 @@ services:
 
 
   systemtests:
-    image: "gcr.io/${PROJECT_ID}/systemtests"
+    image: "gcr.io/${PROJECT_ID}/systemtests:latest"
+    env_file:
+      - config/dev.env
     networks:
       - backend
     ports: 
