@@ -53,6 +53,9 @@ services:
       - config/dev.env
     networks:
       - backend
+    depends_on:
+      - redis
+      - postgres
     ports: 
       - 8080:8080
     restart: unless-stopped
