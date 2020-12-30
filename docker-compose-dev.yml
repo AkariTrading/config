@@ -1,62 +1,124 @@
 version: '3.8'
 
 services:
-  
-  platform:
-    image: gcr.io/${PROJECT_ID}/platform:latest
-    env_file:
-      - config/dev.env
-    ports:
-      - 80:80
-    networks:
-      - backend
+
+  certbot:
+    image: certbot/certbot
+    volumes:
+      - ./data/certbot/conf:/etc/letsencrypt
+      - ./data/certbot/www:/var/www/certbot
     deploy:
       placement:
-        max_replicas_per_node: 2
+        max_replicas_per_node: 1
         constraints:
           - node.labels.type==platform
 
-  redis:
-    image: gcr.io/${PROJECT_ID}/redis:latest
-    networks:
-      - backend
-    deploy:
-      replicas: 1
-      placement:
-        constraints:
-          - node.labels.type==db
-  
-  postgres:
-    image: postgres:12.4-alpine
-    volumes:
-      - postgres_data:/var/lib/postgresql/data
-    networks:
-      - backend
-    environment:
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
-    deploy:
-      replicas: 1
-      placement:
-        constraints:
-          - node.labels.type==db
-
-
-  systemtests:
-    image: gcr.io/${PROJECT_ID}/systemtests:latest
+  nginx:
+    image: gcr.io/${PROJECT_ID}/nginx:latest
     env_file:
-      - config/dev.env
+      - .env
+    volumes:
+      - ./data/certbot/conf:/etc/letsencrypt
+      - ./data/certbot/www:/var/www/certbot
     ports:
-      - 8080:8080
+      - 80:80
+      - 443:443
     networks:
       - backend
     deploy:
-      replicas: 1
       placement:
+        max_replicas_per_node: 1
         constraints:
-          - node.role==manager
+          - node.labels.type==platform
 
-volumes:
-  postgres_data:
+  web:
+    image: gcr.io/${PROJECT_ID}/web:latest
+    env_file:
+      - .env
+    networks:
+      - backend
+    deploy:
+      placement:
+        max_replicas_per_node: 1
+        constraints:
+          - node.labels.type==platform
+
+  platform:
+    image: gcr.io/${PROJECT_ID}/platform:latest
+    env_file:
+      - .env
+    networks:
+      - backend
+    deploy:
+      placement:
+        max_replicas_per_node: 1
+        constraints:
+          - node.labels.type==platform
+
+    prices:
+      image: gcr.io/${PROJECT_ID}/prices:latest
+      env_file:
+        - .env
+      networks:
+        - backend
+      deploy:
+        placement:
+          max_replicas_per_node: 1
+          constraints:
+            - node.labels.type==platform
+
+    backtest:
+      image: gcr.io/${PROJECT_ID}/backtest:latest
+      env_file:
+        - .env
+      networks:
+        - backend
+      deploy:
+        placement:
+          max_replicas_per_node: 1
+          constraints:
+            - node.labels.type==platform
+
+  # redis:
+  #   image: gcr.io/${PROJECT_ID}/redis:latest
+  #   networks:
+  #     - backend
+  #   deploy:
+  #     replicas: 1
+  #     placement:
+  #       constraints:
+  #         - node.labels.type==db
+  
+  # postgres:
+  #   image: postgres:12.4-alpine
+  #   volumes:
+  #     - postgres_data:/var/lib/postgresql/data
+  #   networks:
+  #     - backend
+  #   environment:
+  #     POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+  #   deploy:
+  #     replicas: 1
+  #     placement:
+  #       constraints:
+  #         - node.labels.type==db
+
+  # systemtests:
+  #   image: gcr.io/${PROJECT_ID}/systemtests:latest
+  #   env_file:
+  #     - .env
+  #   ports:
+  #     - 8080:8080
+  #   networks:
+  #     - backend
+  #   deploy:
+  #     replicas: 1
+  #     placement:
+  #       constraints:
+  #         - node.role==manager
+
+# volumes:
+#   postgres_data:
 
 networks:
   backend:
