@@ -2,24 +2,24 @@ version: '3.8'
 
 services:
 
-  certbot:
-    image: certbot/certbot
-    volumes:
-      - ./data/certbot/conf:/etc/letsencrypt
-      - ./data/certbot/www:/var/www/certbot
-    deploy:
-      placement:
-        max_replicas_per_node: 1
-        constraints:
-          - node.labels.type==platform
+  # certbot:
+  #   image: certbot/certbot
+  #   volumes:
+  #     - ./data/certbot/conf:/etc/letsencrypt
+  #     - ./data/certbot/www:/var/www/certbot
+  #   deploy:
+  #     placement:
+  #       max_replicas_per_node: 1
+  #       constraints:
+  #         - node.labels.type==platform
 
   nginx:
     image: gcr.io/${PROJECT_ID}/nginx:latest
     env_file:
       - .env
-    volumes:
-      - ./data/certbot/conf:/etc/letsencrypt
-      - ./data/certbot/www:/var/www/certbot
+    # volumes:
+    #   - ./data/certbot/conf:/etc/letsencrypt
+    #   - ./data/certbot/www:/var/www/certbot
     ports:
       - 80:80
       - 443:443
@@ -31,8 +31,8 @@ services:
         constraints:
           - node.labels.type==platform
 
-  web:
-    image: gcr.io/${PROJECT_ID}/web:latest
+  ui:
+    image: gcr.io/${PROJECT_ID}/ui:latest
     env_file:
       - .env
     networks:
@@ -55,29 +55,29 @@ services:
         constraints:
           - node.labels.type==platform
 
-    prices:
-      image: gcr.io/${PROJECT_ID}/prices:latest
-      env_file:
-        - .env
-      networks:
-        - backend
-      deploy:
-        placement:
-          max_replicas_per_node: 1
-          constraints:
-            - node.labels.type==platform
+    # prices:
+    #   image: gcr.io/${PROJECT_ID}/prices:latest
+    #   env_file:
+    #     - .env
+    #   networks:
+    #     - backend
+    #   deploy:
+    #     placement:
+    #       max_replicas_per_node: 1
+    #       constraints:
+    #         - node.labels.type==platform
 
-    backtest:
-      image: gcr.io/${PROJECT_ID}/backtest:latest
-      env_file:
-        - .env
-      networks:
-        - backend
-      deploy:
-        placement:
-          max_replicas_per_node: 1
-          constraints:
-            - node.labels.type==platform
+    # backtest:
+    #   image: gcr.io/${PROJECT_ID}/backtest:latest
+    #   env_file:
+    #     - .env
+    #   networks:
+    #     - backend
+    #   deploy:
+    #     placement:
+    #       max_replicas_per_node: 1
+    #       constraints:
+    #         - node.labels.type==platform
 
   # redis:
   #   image: gcr.io/${PROJECT_ID}/redis:latest
