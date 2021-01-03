@@ -55,29 +55,34 @@ services:
         constraints:
           - node.labels.type==platform
 
-    # prices:
-    #   image: gcr.io/${PROJECT_ID}/prices:latest
-    #   env_file:
-    #     - .env
-    #   networks:
-    #     - backend
-    #   deploy:
-    #     placement:
-    #       max_replicas_per_node: 1
-    #       constraints:
-    #         - node.labels.type==platform
+  prices:
+    image: gcr.io/${PROJECT_ID}/prices:latest
+    env_file:
+      - .env
+    volumes:
+      - ./candles:${PRICES_PATH}
+    networks:
+      - backend
+    deploy:
+      placement:
+        max_replicas_per_node: 1
+        constraints:
+          - node.labels.type==platform
 
-    backtest:
-      image: gcr.io/${PROJECT_ID}/backtest:latest
-      env_file:
-        - .env
-      networks:
-        - backend
-      deploy:
-        placement:
-          max_replicas_per_node: 1
-          constraints:
-            - node.labels.type==platform
+  backtest:
+    image: gcr.io/${PROJECT_ID}/backtest:latest
+    env_file:
+      - .env
+    volumes:
+      # remove in prod
+      - ./candles:${PRICES_CACHE_PATH}
+    networks:
+      - backend
+    deploy:
+      placement:
+        max_replicas_per_node: 1
+        constraints:
+          - node.labels.type==platform
 
   # redis:
   #   image: gcr.io/${PROJECT_ID}/redis:latest
